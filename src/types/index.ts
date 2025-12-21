@@ -13,7 +13,6 @@ export enum Severity {
 
 export enum RuleName {
   InpHeavyLoops = "inp-heavy-loops",
-  MemoryCleanup = "memory-cleanup",
 }
 
 export interface PerformanceIssue {

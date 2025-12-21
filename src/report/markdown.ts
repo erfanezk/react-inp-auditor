@@ -51,8 +51,7 @@ export function generateMarkdownReport(result: AnalysisResult): string {
   markdown += `- 🟢 Low: ${result.summary.bySeverity[S.Low]}\n\n`;
 
   markdown += "### By Metric\n\n";
-  markdown += `- ⚡ INP: ${result.summary.byMetric[PM.Inp]}\n`;
-  markdown += `- 💾 MEMORY: ${result.summary.byMetric[PM.Memory]}\n\n`;
+  markdown += `- ⚡ INP: ${result.summary.byMetric[PM.Inp]}\n\n`;
 
   if (result.issues.length === 0) {
     markdown += "✅ **No performance issues found!**\n";
