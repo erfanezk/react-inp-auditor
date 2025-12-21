@@ -2,9 +2,16 @@
   "name": "Frontend-Performance-Auditor",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "type": "module",
+  "main": "build/server.js",
+  "files": ["build"],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "format": "biome format --write .",
+    "lint": "biome lint .",
+    "check": "biome check .",
+    "check:fix": "biome check --write ."
   },
   "keywords": [],
   "author": "",
@@ -14,6 +21,7 @@
     "@modelcontextprotocol/sdk": "^1.25.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.3.10"
+    "@biomejs/biome": "^2.3.10",
+    "typescript": "^5.7.0"
   }
 }
