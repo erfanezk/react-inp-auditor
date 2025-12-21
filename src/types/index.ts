@@ -1,10 +1,20 @@
 import type { SourceFile } from "typescript";
 
-export type PerformanceMetric = "INP" | "MEMORY";
+export enum PerformanceMetric {
+  Inp = "INP",
+  Memory = "MEMORY",
+}
 
-export type Severity = "high" | "medium" | "low";
+export enum Severity {
+  High = "high",
+  Medium = "medium",
+  Low = "low",
+}
 
-export type RuleName = "inp-heavy-loops" | "memory-cleanup";
+export enum RuleName {
+  InpHeavyLoops = "inp-heavy-loops",
+  MemoryCleanup = "memory-cleanup",
+}
 
 export interface PerformanceIssue {
   metric: PerformanceMetric;
