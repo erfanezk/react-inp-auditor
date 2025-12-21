@@ -9,6 +9,9 @@ build/
 out/
 *.tsbuildinfo
 
+# Results
+results/
+
 # Logs
 logs/
 *.log
