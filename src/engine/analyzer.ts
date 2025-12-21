@@ -1,8 +1,8 @@
+import { parseFiles } from "@/ast/parser";
+import { getChangedFiles } from "@/git/diff";
+import { rules } from "@/rules";
 import type { AnalysisResult, AnalyzerOptions, PerformanceIssue } from "@/types";
 import { PerformanceMetric, Severity } from "@/types";
-import { getChangedFiles } from "@/git/diff";
-import { parseFiles } from "@/ast/parser";
-import { rules } from "@/rules";
 
 export async function analyze(
   options: AnalyzerOptions,
