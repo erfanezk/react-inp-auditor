@@ -4,20 +4,18 @@
     "module": "es2022",
     "moduleResolution": "bundler",
     "outDir": "./build",
-    "rootDir": ".",
+    "jsx": "react-jsx",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "declaration": true,
-    "declarationMap": true,
     "sourceMap": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
     }
   },
-  "include": ["src/**/*","examples/**/*"],
-  "exclude": ["node_modules", "build", "examples"]
+  "include": ["src/**/*", "examples/**/*"],
+  "exclude": ["node_modules", "build"]
 }
