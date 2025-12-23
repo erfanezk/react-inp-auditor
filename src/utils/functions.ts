@@ -66,11 +66,11 @@ export function matchesPattern(name: string, patterns: readonly string[]): boole
 }
 
 export function isLoop(node: ts.Node): boolean {
-    return (
-      ts.isForStatement(node) ||
-      ts.isForInStatement(node) ||
-      ts.isForOfStatement(node) ||
-      ts.isWhileStatement(node) ||
-      ts.isDoStatement(node)
-    );
-  }
+  return (
+    ts.isForStatement(node) ||
+    ts.isForInStatement(node) ||
+    ts.isForOfStatement(node) ||
+    ts.isWhileStatement(node) ||
+    ts.isDoStatement(node)
+  );
+}
