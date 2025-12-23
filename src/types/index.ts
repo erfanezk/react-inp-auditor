@@ -12,6 +12,7 @@ export enum Severity {
 
 export enum RuleName {
   InpHeavyLoops = "inp-heavy-loops",
+  InpCallbackYield = "inp-callback-yield",
 }
 
 export interface PerformanceIssue {

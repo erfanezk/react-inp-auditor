@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
+import { mkdir, writeFile } from "node:fs/promises";
+import { join } from "node:path";
 import { analyze } from "@/engine/analyzer";
 import { generateMarkdownReport } from "@/report/markdown";
 import type { AnalyzerOptions } from "@/types";
 import { Severity } from "@/types";
-import { mkdir, writeFile } from "node:fs/promises";
-import { join } from "node:path";
 
 function parseArgs(): AnalyzerOptions {
   const args = process.argv.slice(2);

@@ -16,6 +16,8 @@ function getMetricIcon(metric: PerformanceMetric): string {
   switch (metric) {
     case PM.Inp:
       return "⚡";
+    default:
+      return "📊";
   }
 }
 
@@ -38,19 +40,20 @@ function formatIssue(issue: PerformanceIssue, index: number): string {
     const lines = issue.codeSnippet.split("\n");
     const nonEmptyLines = lines.filter((line) => line.trim().length > 0);
 
+    let cleanedSnippet: string;
     if (nonEmptyLines.length > 0) {
       const minIndent = Math.min(
         ...nonEmptyLines.map((line) => line.length - line.trimStart().length)
       );
-      const cleanedSnippet = lines
+      cleanedSnippet = lines
         .map((line) => (line.trim().length > 0 ? line.slice(minIndent) : line))
         .join("\n")
         .trim();
-
-      markdown += `\`\`\`typescript\n${cleanedSnippet}\n\`\`\`\n\n`;
     } else {
-      markdown += `\`\`\`typescript\n${issue.codeSnippet}\n\`\`\`\n\n`;
+      cleanedSnippet = issue.codeSnippet.trim();
     }
+
+    markdown += `\`\`\`typescript\n${cleanedSnippet}\n\`\`\`\n\n`;
   }
 
   return markdown;
