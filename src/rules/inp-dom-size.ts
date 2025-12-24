@@ -59,18 +59,16 @@ function analyzeDomStructure(
 }
 
 function createIssue(filePath: string, metrics: DomSizeMetrics): PerformanceIssue {
-  const { line, column } = metrics.location;
-
   const explanation = `JSX element "${metrics.elementName}" has excessive nesting depth of ${metrics.maxDepth} levels. Deep component trees increase rendering time and memory usage, negatively impacting INP (Interaction to Next Paint).`;
-  const severity = Severity.Medium;
   const fix = `Break down the component into smaller, reusable pieces. Extract deeply nested sections into separate components to flatten the component tree.`;
 
+  // For DOM size, we'll create a simplified issue since we don't have the sourceFile
   return {
     metric: PerformanceMetric.Inp,
-    severity,
+    severity: Severity.Medium,
     file: filePath,
-    line,
-    column,
+    line: metrics.location.line,
+    column: metrics.location.column,
     explanation,
     fix,
     rule: RuleName.InpDomSize,

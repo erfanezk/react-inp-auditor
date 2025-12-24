@@ -1,66 +1,54 @@
-import ts from "typescript";
+import type ts from "typescript";
 import type { PerformanceIssue, Rule } from "@/types";
 import { PerformanceMetric, RuleName, Severity } from "@/types";
+import { earlyExitVisit } from "@/utils/ast-visitor";
 import { findEventHandlers } from "@/utils/event-handler";
-import { getCallExpressionName, getFunctionBody } from "@/utils/functions";
+import { getCallExpressionName } from "@/utils/functions";
+import { createIssueFromNode } from "@/utils/issue-factory";
+import { safeGetFunctionBody } from "@/utils/safe-functions";
 import { hasYieldingMechanism } from "@/utils/yielding";
 
-// Threshold: flag if 3+ state updates (more conservative than previous 2)
-const MIN_STATE_UPDATES = 3;
+// Configurable threshold
+const DEFAULT_MIN_STATE_UPDATES = 3;
 
 function countStateUpdates(body: ts.Node, sourceFile: ts.SourceFile): number {
   let count = 0;
 
-  function visit(node: ts.Node) {
-    const callName = getCallExpressionName(node, sourceFile);
-
-    if (callName) {
-      // Check for state update patterns
-      if (
-        callName.startsWith("set") || // useState setters: setCount, setValue, etc.
-        callName === "dispatch" || // Redux dispatch
-        callName === "setState" // React class component setState
-      ) {
-        count++;
-      }
+  earlyExitVisit(body, sourceFile, (node, sf) => {
+    const callName = getCallExpressionName(node, sf);
+    if (
+      callName &&
+      (callName.startsWith("set") || callName === "dispatch" || callName === "setState")
+    ) {
+      count++;
     }
+    return null; // Continue traversal
+  });
 
-    ts.forEachChild(node, visit);
-  }
-
-  visit(body);
   return count;
 }
 
-/**
- * Check if there's yielding between state updates
- */
-function hasYieldingBetweenUpdates(body: ts.Node, sourceFile: ts.SourceFile): boolean {
-  // Simple check: if the function has yielding, assume it's between updates
-  // More sophisticated analysis could track update positions vs yield positions
-  return hasYieldingMechanism(body, sourceFile, true);
-}
-
-function createIssue(
+function createStateUpdateIssue(
   filePath: string,
   sourceFile: ts.SourceFile,
   handler: ts.Node,
   updateCount: number
 ): PerformanceIssue {
-  const { line, character } = sourceFile.getLineAndCharacterOfPosition(handler.getStart());
-  const codeSnippet = sourceFile.text.substring(handler.getStart(), handler.getEnd());
+  const explanation = `Event handler performs ${updateCount} state updates without yielding between them. Multiple synchronous state updates can cause multiple re-renders and block the main thread, leading to poor INP (Interaction to Next Paint).`;
+  const fix =
+    "Batch state updates or yield between them using requestAnimationFrame or setTimeout.";
 
-  return {
-    metric: PerformanceMetric.Inp,
-    severity: Severity.Medium,
-    file: filePath,
-    line: line + 1,
-    column: character + 1,
-    explanation: `Event handler performs ${updateCount} state updates without yielding between them. Multiple synchronous state updates can cause multiple re-renders and block the main thread, leading to poor INP (Interaction to Next Paint).`,
-    fix: "Batch state updates or yield between them using requestAnimationFrame or setTimeout. For React, use React.startTransition() or batch updates: React.startTransition(() => { setState1(); setState2(); setState3(); });",
-    rule: RuleName.InpEventHandlerStateUpdates,
-    codeSnippet: codeSnippet.substring(0, 200),
-  };
+  return createIssueFromNode(
+    sourceFile,
+    filePath,
+    RuleName.InpEventHandlerStateUpdates,
+    {
+      explanation,
+      fix,
+      severity: Severity.Medium,
+    },
+    handler
+  );
 }
 
 export const inpEventHandlerStateUpdatesRule: Rule = {
@@ -76,22 +64,17 @@ export const inpEventHandlerStateUpdatesRule: Rule = {
     const eventHandlers = findEventHandlers(sourceFile);
 
     for (const handler of eventHandlers) {
-      const body = getFunctionBody(handler);
+      const body = safeGetFunctionBody(handler);
       if (!body) continue;
 
       const updateCount = countStateUpdates(body, sourceFile);
 
-      // Only flag if handler has 3+ state updates
-      if (updateCount < MIN_STATE_UPDATES) {
-        continue;
-      }
+      // Apply filters
+      if (updateCount < DEFAULT_MIN_STATE_UPDATES) continue;
 
-      // Only flag if handler doesn't yield between updates
-      if (hasYieldingBetweenUpdates(body, sourceFile)) {
-        continue;
-      }
+      if (hasYieldingMechanism(body, sourceFile, true)) continue;
 
-      const issue = createIssue(filePath, sourceFile, handler, updateCount);
+      const issue = createStateUpdateIssue(filePath, sourceFile, handler, updateCount);
       issues.push(issue);
     }
 

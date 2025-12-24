@@ -1,50 +1,40 @@
-import ts from "typescript";
+import type ts from "typescript";
 import { API_CALL_PATTERNS } from "@/constants/api-call";
 import type { PerformanceIssue, Rule } from "@/types";
 import { PerformanceMetric, RuleName, Severity } from "@/types";
+import { earlyExitVisit } from "@/utils/ast-visitor";
 import { findEventHandlers } from "@/utils/event-handler";
-import { getCallExpressionName, getFunctionBody, matchesPattern } from "@/utils/functions";
-import { hasYieldingMechanism } from "@/utils/yielding";
+import { getCallExpressionName, matchesPattern } from "@/utils/functions";
+import { createIssueFromNode } from "@/utils/issue-factory";
+import { skipIfHasYielding } from "@/utils/rule-filters";
+import { safeGetFunctionBody } from "@/utils/safe-functions";
 
 function hasApiCall(body: ts.Node, sourceFile: ts.SourceFile): boolean {
-  let found = false;
-
-  function visit(node: ts.Node) {
-    if (found) return;
-
-    const callName = getCallExpressionName(node, sourceFile);
-    if (callName && matchesPattern(callName, API_CALL_PATTERNS)) {
-      found = true;
-      return;
-    }
-
-    ts.forEachChild(node, visit);
-  }
-
-  visit(body);
-  return found;
+  return (
+    earlyExitVisit(body, sourceFile, (node, sf) => {
+      const callName = getCallExpressionName(node, sf);
+      return callName && matchesPattern(callName, API_CALL_PATTERNS) ? true : null;
+    }) ?? false
+  );
 }
 
-function createIssue(
+function createApiCallIssue(
   filePath: string,
   sourceFile: ts.SourceFile,
   handler: ts.Node
 ): PerformanceIssue {
-  const { line, character } = sourceFile.getLineAndCharacterOfPosition(handler.getStart());
-  const codeSnippet = sourceFile.text.substring(handler.getStart(), handler.getEnd());
-
-  return {
-    metric: PerformanceMetric.Inp,
-    severity: Severity.High,
-    file: filePath,
-    line: line + 1,
-    column: character + 1,
-    explanation:
-      "Event handler performs API calls without yielding to the main thread. This can block rendering and cause poor INP (Interaction to Next Paint).",
-    fix: "Defer API calls using setTimeout or requestIdleCallback. For UI updates, update immediately, then defer API calls: updateUI(); requestAnimationFrame(() => { setTimeout(() => { fetchData(); }, 0); });",
-    rule: RuleName.InpEventHandlerApiCalls,
-    codeSnippet: codeSnippet.substring(0, 200),
-  };
+  return createIssueFromNode(
+    sourceFile,
+    filePath,
+    RuleName.InpEventHandlerApiCalls,
+    {
+      explanation:
+        "Event handler performs API calls without yielding to the main thread. This can block rendering and cause poor INP (Interaction to Next Paint).",
+      fix: "Defer API calls using setTimeout or requestIdleCallback.",
+      severity: Severity.High,
+    },
+    handler
+  );
 }
 
 export const inpEventHandlerApiCallsRule: Rule = {
@@ -60,7 +50,7 @@ export const inpEventHandlerApiCallsRule: Rule = {
     const eventHandlers = findEventHandlers(sourceFile);
 
     for (const handler of eventHandlers) {
-      const body = getFunctionBody(handler);
+      const body = safeGetFunctionBody(handler);
       if (!body) continue;
 
       // Only flag if handler has API calls
@@ -69,11 +59,10 @@ export const inpEventHandlerApiCallsRule: Rule = {
       }
 
       // Only flag if handler doesn't yield
-      if (hasYieldingMechanism(body, sourceFile, true)) {
-        continue;
-      }
+      const yieldingFilter = skipIfHasYielding(body, sourceFile);
+      if (yieldingFilter.shouldSkip) continue;
 
-      const issue = createIssue(filePath, sourceFile, handler);
+      const issue = createApiCallIssue(filePath, sourceFile, handler);
       issues.push(issue);
     }
 
