@@ -3,7 +3,7 @@ import type { PerformanceIssue, PerformanceMetric } from "./performance.types";
 import type { Severity } from "./severity.types";
 
 export enum RuleName {
-  InpCallbackYield = "inp-callback-yield",
+  InpIncorrectYielding = "inp-incorrect-yielding",
   InpLayoutThrashing = "inp-layout-thrashing",
   InpDomSize = "inp-dom-size",
   // Long task focused rules

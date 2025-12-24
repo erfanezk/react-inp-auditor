@@ -60,14 +60,14 @@ function createIssue(
     explanation:
       "Event handler uses yielding but defers UI updates instead of non-UI work. UI updates should happen immediately, then non-critical work should be deferred.",
     fix: "Update UI synchronously first, then defer non-critical work: updateUI(); requestAnimationFrame(() => { setTimeout(() => { /* non-UI work */ }, 0); });",
-    rule: RuleName.InpCallbackYield,
+    rule: RuleName.InpIncorrectYielding,
     codeSnippet: codeSnippet.substring(0, 200),
   };
 }
 
 export const inpCallbackYieldRule: Rule = {
   config: {
-    name: RuleName.InpCallbackYield,
+    name: RuleName.InpIncorrectYielding,
     description:
       "Detects event handlers that incorrectly defer UI updates instead of non-UI work when using yielding mechanisms",
     metric: PerformanceMetric.Inp,
