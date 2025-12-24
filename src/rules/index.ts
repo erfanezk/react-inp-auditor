@@ -2,12 +2,12 @@ import type { Rule } from "@/types";
 import { inpAnimationCompositingRule } from "./inp-animation-compositing";
 import { inpAnimationTypeRule } from "./inp-animation-type";
 import { inpAsyncBatchProcessingRule } from "./inp-async-batch-processing";
-import { inpCallbackYieldRule } from "./inp-callback-yield";
 import { inpDomSizeRule } from "./inp-dom-size";
 import { inpEventHandlerApiCallsRule } from "./inp-event-handler-api-calls";
 import { inpEventHandlerDomManipulationRule } from "./inp-event-handler-dom-manipulation";
 import { inpEventHandlerStateUpdatesRule } from "./inp-event-handler-state-updates";
 import { inpHeavyComputationRule } from "./inp-heavy-computation";
+import { inpCallbackYieldRule } from "./inp-incorrect-yielding";
 import { inpLayoutThrashingRule } from "./inp-layout-thrashing";
 import { inpLongLoopRule } from "./inp-long-loop";
 
