@@ -1,6 +1,5 @@
 import type { Rule } from "@/types";
 import { inpAnimationCompositingRule } from "./inp-animation-compositing";
-import { inpAnimationTypeRule } from "./inp-animation-type";
 import { inpAsyncBatchProcessingRule } from "./inp-async-batch-processing";
 import { inpDomSizeRule } from "./inp-dom-size";
 import { inpEventHandlerApiCallsRule } from "./inp-event-handler-api-calls";
@@ -24,7 +23,7 @@ const longTaskRules: Rule[] = [
   inpHeavyComputationRule,
 ];
 
-const animationRules: Rule[] = [inpAnimationTypeRule, inpAnimationCompositingRule];
+const animationRules: Rule[] = [inpAnimationCompositingRule];
 
 const layoutRules: Rule[] = [inpLayoutThrashingRule];
 
