@@ -1,36 +1,23 @@
 import { describe, expect, it } from "vitest";
 import type { PerformanceIssue } from "@/types";
-import { PerformanceMetric, RuleName, Severity } from "@/types";
-import { createSourceFile } from "@/utils/test-helpers";
+import { RuleName } from "@/types";
 import { inpAnimationCompositingRule } from "../inp-animation-compositing";
+import {
+  detectIssues as detectIssuesGeneric,
+  expectIssuesDetected as expectIssuesDetectedGeneric,
+  expectNoIssues,
+} from "./test-utils";
 
 // Test helpers
 function detectIssues(code: string, fileName: string = "test.tsx"): PerformanceIssue[] {
-  const sourceFile = createSourceFile(code, fileName);
-  return inpAnimationCompositingRule.detect(fileName, sourceFile);
-}
-
-function expectIssue(issue: PerformanceIssue): void {
-  expect(issue.metric).toBe(PerformanceMetric.Inp);
-  expect(issue.severity).toBe(Severity.High);
-  expect(issue.rule).toBe(RuleName.InpAnimationCompositing);
-  expect(issue.file).toBeTruthy();
-  expect(issue.explanation).toContain("Non-composited CSS properties");
-  expect(issue.fix).toBeDefined();
-  expect(issue.line).toBeGreaterThan(0);
-  expect(issue.column).toBeGreaterThan(0);
-  expect(issue.codeSnippet).toBeDefined();
-  expect(issue.codeSnippet?.length).toBeGreaterThan(0);
-}
-
-function expectNoIssues(issues: PerformanceIssue[]): void {
-  expect(issues).toHaveLength(0);
+  return detectIssuesGeneric(inpAnimationCompositingRule, code, fileName);
 }
 
 function expectIssuesDetected(issues: PerformanceIssue[], minCount: number = 1): void {
-  expect(issues.length).toBeGreaterThanOrEqual(minCount);
+  expectIssuesDetectedGeneric(issues, RuleName.InpAnimationCompositing, minCount);
+  // Additional rule-specific checks
   for (const issue of issues) {
-    expectIssue(issue);
+    expect(issue.explanation).toContain("Non-composited CSS properties");
   }
 }
 
